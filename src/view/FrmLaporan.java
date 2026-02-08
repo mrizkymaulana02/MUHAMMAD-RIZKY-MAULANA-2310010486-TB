@@ -18,6 +18,10 @@ import java.util.Date;
 import java.util.Locale;
 import javax.swing.JTextArea;
 import java.sql.Statement;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.view.JasperViewer;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FrmLaporan extends javax.swing.JFrame {
 
@@ -161,6 +165,8 @@ public class FrmLaporan extends javax.swing.JFrame {
         btnFilter = new javax.swing.JButton();
         btnReset = new javax.swing.JButton();
         btnCetak = new javax.swing.JButton();
+        btnExportCSV = new javax.swing.JButton();
+        btnCetak1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Laporan");
@@ -341,10 +347,29 @@ public class FrmLaporan extends javax.swing.JFrame {
         btnCetak.setBackground(new java.awt.Color(189, 229, 245));
         btnCetak.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         btnCetak.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/print_16dp_000000_FILL0_wght400_GRAD0_opsz20.png"))); // NOI18N
-        btnCetak.setText("Cetak PDF");
+        btnCetak.setText("Cetak Laporan Transaksi");
         btnCetak.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCetakActionPerformed(evt);
+            }
+        });
+
+        btnExportCSV.setBackground(new java.awt.Color(189, 229, 245));
+        btnExportCSV.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnExportCSV.setText("Export CSV");
+        btnExportCSV.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExportCSVActionPerformed(evt);
+            }
+        });
+
+        btnCetak1.setBackground(new java.awt.Color(189, 229, 245));
+        btnCetak1.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
+        btnCetak1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/print_16dp_000000_FILL0_wght400_GRAD0_opsz20.png"))); // NOI18N
+        btnCetak1.setText("Cetak Laporan Wisata");
+        btnCetak1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCetak1ActionPerformed(evt);
             }
         });
 
@@ -373,10 +398,12 @@ public class FrmLaporan extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(btnFilter, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(btnReset, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addGap(16, 16, 16)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btnCetak, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(btnKembali, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(btnCetak1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnCetak, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addComponent(btnKembali, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnExportCSV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
@@ -386,7 +413,9 @@ public class FrmLaporan extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(422, 422, 422)
-                        .addComponent(btnReset))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnReset)
+                            .addComponent(btnCetak1)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(lblTitle)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -404,10 +433,12 @@ public class FrmLaporan extends javax.swing.JFrame {
                                     .addComponent(jDateChooser2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnCetak)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btnKembali)))))
-                .addGap(33, 33, 33))
+                                .addComponent(btnCetak)))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 7, Short.MAX_VALUE)
+                .addComponent(btnExportCSV)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnKembali)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -508,65 +539,26 @@ public class FrmLaporan extends javax.swing.JFrame {
 
     private void btnCetakActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCetakActionPerformed
         try {
-            StringBuilder sb = new StringBuilder();
+            JasperReport jr = JasperCompileManager.compileReport(
+                    getClass().getResourceAsStream("/report/laporan_transaksi.jrxml")
+            );
 
-            String periode = "";
-            if (jDateChooser1.getDate() != null && jDateChooser2.getDate() != null) {
-                periode = new java.text.SimpleDateFormat("dd-MM-yyyy")
-                        .format(jDateChooser1.getDate())
-                        + " s/d "
-                        + new java.text.SimpleDateFormat("dd-MM-yyyy")
-                                .format(jDateChooser2.getDate());
-            } else {
-                periode = "Semua Data";
-            }
+            HashMap<String, Object> param = new HashMap<>();
+            param.put("tgl_awal", jDateChooser1.getDate());
+            param.put("tgl_akhir", jDateChooser2.getDate());
 
-            sb.append("WISATA GUNUNG MAMAKE\n");
-            sb.append("LAPORAN PENDAPATAN\n");
-            sb.append("Periode : ").append(periode).append("\n");
-            sb.append("==================================================\n");
-            sb.append(String.format(
-                    "%-4s %-25s %-20s%n",
-                    "No", "Nama Wisata", "Total Pendapatan"
-            ));
-            sb.append("--------------------------------------------------\n");
+            JasperPrint jp = JasperFillManager.fillReport(
+                    jr,
+                    param,
+                    database.Koneksi.getConnection()
+            );
 
-            DefaultTableModel model = (DefaultTableModel) tblPendapatan.getModel();
-            double grandTotal = 0;
-
-            for (int i = 0; i < model.getRowCount(); i++) {
-                String nama = model.getValueAt(i, 0).toString();
-                String rupiah = model.getValueAt(i, 1).toString();
-                double totalAsli = (double) model.getValueAt(i, 2);
-
-                sb.append(String.format(
-                        "%-4d %-25s %-20s%n",
-                        i + 1,
-                        nama,
-                        rupiah
-                ));
-
-                grandTotal += totalAsli;
-            }
-
-            sb.append("--------------------------------------------------\n");
-            sb.append(String.format(
-                    "%-30s %-20s%n",
-                    "TOTAL PENDAPATAN",
-                    formatRupiah(grandTotal)
-            ));
-            sb.append("==================================================\n");
-            sb.append("Dicetak pada : ")
-                    .append(new java.text.SimpleDateFormat("dd-MM-yyyy HH:mm:ss")
-                            .format(new java.util.Date()))
-                    .append("\n");
-
-            JTextArea ta = new JTextArea(sb.toString());
-            ta.setFont(new java.awt.Font("Monospaced", java.awt.Font.PLAIN, 12));
-            ta.print();
+            JasperViewer.viewReport(jp, false);
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Gagal cetak PDF: " + e.getMessage());
+            JOptionPane.showMessageDialog(this,
+                    "Gagal mencetak laporan: " + e.getMessage());
+            e.printStackTrace();
         }
     }//GEN-LAST:event_btnCetakActionPerformed
 
@@ -576,6 +568,84 @@ public class FrmLaporan extends javax.swing.JFrame {
         jDateChooser2.setDate(null);
         loadDataPendapatan();
     }//GEN-LAST:event_btnResetActionPerformed
+
+    private void btnExportCSVActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportCSVActionPerformed
+
+        if (tblPendapatan.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(this, "Tidak ada data untuk diekspor!");
+            return;
+        }
+
+        try {
+            javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+            chooser.setDialogTitle("Simpan Laporan CSV");
+
+            int userSelection = chooser.showSaveDialog(this);
+            if (userSelection != javax.swing.JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+
+            java.io.File file = chooser.getSelectedFile();
+            if (!file.getName().endsWith(".csv")) {
+                file = new java.io.File(file.getAbsolutePath() + ".csv");
+            }
+
+            java.io.FileWriter fw = new java.io.FileWriter(file);
+            java.io.BufferedWriter bw = new java.io.BufferedWriter(fw);
+
+            // Header CSV
+            bw.write("Nama Wisata,Total Pendapatan");
+            bw.newLine();
+
+            javax.swing.table.DefaultTableModel model
+                    = (javax.swing.table.DefaultTableModel) tblPendapatan.getModel();
+
+            for (int i = 0; i < model.getRowCount(); i++) {
+                String nama = model.getValueAt(i, 0).toString();
+                String total = model.getValueAt(i, 1).toString();
+                bw.write(nama + "," + total);
+                bw.newLine();
+            }
+
+            bw.close();
+            fw.close();
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Laporan berhasil diekspor ke CSV:\n" + file.getAbsolutePath()
+            );
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal ekspor CSV: " + e.getMessage());
+        }
+
+
+    }//GEN-LAST:event_btnExportCSVActionPerformed
+
+    private void btnCetak1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCetak1ActionPerformed
+        // TODO add your handling code here:
+        try {
+            JasperReport jr = JasperCompileManager.compileReport(
+                    getClass().getResourceAsStream("/report/laporan_wisata.jrxml")
+            );
+
+            // laporan wisata TIDAK pakai parameter tanggal
+            Map<String, Object> param = new HashMap<>();
+
+            JasperPrint jp = JasperFillManager.fillReport(
+                    jr,
+                    param,
+                    database.Koneksi.getConnection()
+            );
+
+            JasperViewer.viewReport(jp, false);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Gagal mencetak laporan wisata: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }//GEN-LAST:event_btnCetak1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -614,6 +684,8 @@ public class FrmLaporan extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnCetak;
+    private javax.swing.JButton btnCetak1;
+    private javax.swing.JButton btnExportCSV;
     private javax.swing.JButton btnFilter;
     private javax.swing.JButton btnKembali;
     private javax.swing.JButton btnRefreshPendapatan;
